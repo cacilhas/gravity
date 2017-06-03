@@ -1,9 +1,6 @@
 package gravity
 
-import (
-	"fmt"
-	"sync"
-)
+import "fmt"
 
 // G universal gravitational constant
 const G = 6.67408e-11
@@ -126,10 +123,21 @@ func interactBodies(origin map[string]Body) map[Body][]Point {
 		for j := i + 1; j < length; j++ {
 			b2 := bodies[j]
 			diff := b1.Grav(b2)
-			var group sync.WaitGroup
-			findAndReplace(buffer[b1], nil, diff, &group)
-			findAndReplace(buffer[b2], nil, diff.Mul(-1), &group)
-			group.Wait()
+			ch1 := make(chan indexedPoint)
+			ch2 := make(chan indexedPoint)
+			go findAndReplace(buffer[b2], nil, diff.Mul(-1), ch2)
+			go findAndReplace(buffer[b1], nil, diff, ch1)
+
+			res := <-ch1
+			close(ch1)
+			if res.value != nil {
+				buffer[b1][res.index] = res.value
+			}
+			res = <-ch2
+			close(ch2)
+			if res.value != nil {
+				buffer[b2][res.index] = res.value
+			}
 		}
 	}
 
@@ -142,14 +150,17 @@ func interactBodies(origin map[string]Body) map[Body][]Point {
 	return buffer
 }
 
-func findAndReplace(arr []Point, target, value Point, group *sync.WaitGroup) bool {
-	group.Add(1)
-	defer group.Done()
+type indexedPoint struct {
+	index int
+	value Point
+}
+
+func findAndReplace(arr []Point, target, value Point, res chan indexedPoint) {
 	for i, e := range arr {
 		if e == target {
-			arr[i] = value
-			return true
+			res <- indexedPoint{index: i, value: value}
+			return
 		}
 	}
-	return false
+	res <- indexedPoint{index: -1, value: nil}
 }
