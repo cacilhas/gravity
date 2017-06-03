@@ -1,6 +1,9 @@
 package gravity
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 // G universal gravitational constant
 const G = 6.67408e-11
@@ -87,8 +90,10 @@ func (s *system) Step(dt float64) error {
 		for j := i + 1; j < length; j++ {
 			b2 := bodies[j]
 			diff := b1.Grav(b2)
-			findAndReplace(buffer[b1], nil, diff)
-			findAndReplace(buffer[b2], nil, diff.Mul(-1))
+			var group sync.WaitGroup
+			findAndReplace(buffer[b1], nil, diff, &group)
+			findAndReplace(buffer[b2], nil, diff.Mul(-1), &group)
+			group.Wait()
 		}
 	}
 
@@ -130,7 +135,9 @@ func (s system) String() string {
 	)
 }
 
-func findAndReplace(arr []Point, target, value Point) bool {
+func findAndReplace(arr []Point, target, value Point, group *sync.WaitGroup) bool {
+	group.Add(1)
+	defer group.Done()
 	for i, e := range arr {
 		if e == target {
 			arr[i] = value
