@@ -75,33 +75,7 @@ func (s *system) Step(dt float64) error {
 		return s.status
 	}
 
-	length := len(s.bodies)
-	buffer := make(map[Body][]Point, len(s.bodies))
-	bodies := make([]Body, length)
-	i := 0
-	for _, b := range s.bodies {
-		buffer[b] = make([]Point, length-1)
-		bodies[i] = b
-		i++
-	}
-
-	for i := 0; i < length-1; i++ {
-		b1 := bodies[i]
-		for j := i + 1; j < length; j++ {
-			b2 := bodies[j]
-			diff := b1.Grav(b2)
-			var group sync.WaitGroup
-			findAndReplace(buffer[b1], nil, diff, &group)
-			findAndReplace(buffer[b2], nil, diff.Mul(-1), &group)
-			group.Wait()
-		}
-	}
-
-	for b, incs := range buffer {
-		for _, inc := range incs {
-			b.SetInertia(b.GetInertia().Add(inc))
-		}
-	}
+	buffer := interactBodies(s.bodies)
 
 	for b := range buffer {
 		if err := b.Move(dt); err != nil {
@@ -133,6 +107,39 @@ func (s system) String() string {
 		"system(%v object%v, total mass of %vKg)",
 		c, pl, s.TotalMass(),
 	)
+}
+
+func interactBodies(origin map[string]Body) map[Body][]Point {
+
+	length := len(origin)
+	buffer := make(map[Body][]Point, length)
+	bodies := make([]Body, length)
+	i := 0
+	for _, b := range origin {
+		buffer[b] = make([]Point, length-1)
+		bodies[i] = b
+		i++
+	}
+
+	for i := 0; i < length-1; i++ {
+		b1 := bodies[i]
+		for j := i + 1; j < length; j++ {
+			b2 := bodies[j]
+			diff := b1.Grav(b2)
+			var group sync.WaitGroup
+			findAndReplace(buffer[b1], nil, diff, &group)
+			findAndReplace(buffer[b2], nil, diff.Mul(-1), &group)
+			group.Wait()
+		}
+	}
+
+	for b, incs := range buffer {
+		for _, inc := range incs {
+			b.SetInertia(b.GetInertia().Add(inc))
+		}
+	}
+
+	return buffer
 }
 
 func findAndReplace(arr []Point, target, value Point, group *sync.WaitGroup) bool {
