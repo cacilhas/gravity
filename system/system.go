@@ -118,6 +118,21 @@ func interactBodies(origin map[string]Body) map[Body][]Point {
 		i++
 	}
 
+	type indexedPoint struct {
+		index int
+		value Point
+	}
+
+	setFirst := func(arr []Point, value Point, res chan indexedPoint) {
+		for i, e := range arr {
+			if e == nil {
+				res <- indexedPoint{index: i, value: value}
+				return
+			}
+		}
+		res <- indexedPoint{index: -1, value: nil}
+	}
+
 	for i := 0; i < length-1; i++ {
 		b1 := bodies[i]
 		for j := i + 1; j < length; j++ {
@@ -125,8 +140,8 @@ func interactBodies(origin map[string]Body) map[Body][]Point {
 			diff := b1.Grav(b2)
 			ch1 := make(chan indexedPoint)
 			ch2 := make(chan indexedPoint)
-			go findAndReplace(buffer[b2], nil, diff.Mul(-1), ch2)
-			go findAndReplace(buffer[b1], nil, diff, ch1)
+			go setFirst(buffer[b2], diff.Mul(-1), ch2)
+			go setFirst(buffer[b1], diff, ch1)
 
 			res := <-ch1
 			close(ch1)
@@ -148,19 +163,4 @@ func interactBodies(origin map[string]Body) map[Body][]Point {
 	}
 
 	return buffer
-}
-
-type indexedPoint struct {
-	index int
-	value Point
-}
-
-func findAndReplace(arr []Point, target, value Point, res chan indexedPoint) {
-	for i, e := range arr {
-		if e == target {
-			res <- indexedPoint{index: i, value: value}
-			return
-		}
-	}
-	res <- indexedPoint{index: -1, value: nil}
 }
