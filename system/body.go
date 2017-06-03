@@ -10,11 +10,11 @@ type Body interface {
 	GetName() string
 	GetMass() float64
 	GetPosition() Point
-	SetPosition(pos Point)
+	SetPosition(Point)
 	GetInertia() Point
 	SetInertia(v Point)
-	Move(dt float64) error
-	Grav(other Body) Point
+	Move(float64) error
+	Grav(Body) Point
 	String() string
 }
 

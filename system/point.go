@@ -12,11 +12,11 @@ type Point interface {
 	GetZ() float64
 	Hypot() float64
 
-	Add(other Point) Point
+	Add(Point) Point
 	Add2(x, y float64) Point
 	Add3(x, y, z float64) Point
-	Diff(other Point) Point
-	Mul(f float64) Point
+	Diff(Point) Point
+	Mul(float64) Point
 
 	String() string
 }
