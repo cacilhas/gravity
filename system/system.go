@@ -72,13 +72,14 @@ func (s *system) Step(dt float64) error {
 		return s.status
 	}
 
+	length := len(s.bodies)
 	buffer := make(map[Body][]Point, len(s.bodies))
-	bodies := make([]Body, len(s.bodies))
-	length := 0
+	bodies := make([]Body, length)
+	i := 0
 	for _, b := range s.bodies {
-		buffer[b] = make([]Point, 0)
-		bodies[length] = b
-		length++
+		buffer[b] = make([]Point, length-1)
+		bodies[i] = b
+		i++
 	}
 
 	for i := 0; i < length-1; i++ {
@@ -86,8 +87,8 @@ func (s *system) Step(dt float64) error {
 		for j := i + 1; j < length; j++ {
 			b2 := bodies[j]
 			diff := b1.Grav(b2)
-			buffer[b1] = append(buffer[b1], diff)
-			buffer[b2] = append(buffer[b2], diff.Mul(-1))
+			findAndReplace(buffer[b1], nil, diff)
+			findAndReplace(buffer[b2], nil, diff.Mul(-1))
 		}
 	}
 
@@ -127,4 +128,14 @@ func (s system) String() string {
 		"system(%v object%v, total mass of %vKg)",
 		c, pl, s.TotalMass(),
 	)
+}
+
+func findAndReplace(arr []Point, target, value Point) bool {
+	for i, e := range arr {
+		if e == target {
+			arr[i] = value
+			return true
+		}
+	}
+	return false
 }
