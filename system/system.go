@@ -72,30 +72,7 @@ func (s *system) Step(dt float64) error {
 		return s.status
 	}
 
-	buffer := make(map[Body][]Point, len(s.bodies))
-	bodies := make([]Body, len(s.bodies))
-	length := 0
-	for _, b := range s.bodies {
-		buffer[b] = make([]Point, 0)
-		bodies[length] = b
-		length++
-	}
-
-	for i := 0; i < length-1; i++ {
-		b1 := bodies[i]
-		for j := i + 1; j < length; j++ {
-			b2 := bodies[j]
-			diff := b1.Grav(b2)
-			buffer[b1] = append(buffer[b1], diff)
-			buffer[b2] = append(buffer[b2], diff.Mul(-1))
-		}
-	}
-
-	for b, incs := range buffer {
-		for _, inc := range incs {
-			b.SetInertia(b.GetInertia().Add(inc))
-		}
-	}
+	buffer := interactBodies(s.bodies)
 
 	for b := range buffer {
 		if err := b.Move(dt); err != nil {
@@ -127,4 +104,63 @@ func (s system) String() string {
 		"system(%v object%v, total mass of %vKg)",
 		c, pl, s.TotalMass(),
 	)
+}
+
+func interactBodies(origin map[string]Body) map[Body][]Point {
+
+	length := len(origin)
+	buffer := make(map[Body][]Point, length)
+	bodies := make([]Body, length)
+	i := 0
+	for _, b := range origin {
+		buffer[b] = make([]Point, length-1)
+		bodies[i] = b
+		i++
+	}
+
+	type indexedPoint struct {
+		index int
+		value Point
+	}
+
+	setFirst := func(arr []Point, value Point, res chan indexedPoint) {
+		for i, e := range arr {
+			if e == nil {
+				res <- indexedPoint{index: i, value: value}
+				return
+			}
+		}
+		res <- indexedPoint{index: -1, value: nil}
+	}
+
+	for i := 0; i < length-1; i++ {
+		b1 := bodies[i]
+		for j := i + 1; j < length; j++ {
+			b2 := bodies[j]
+			diff := b1.Grav(b2)
+			ch1 := make(chan indexedPoint)
+			ch2 := make(chan indexedPoint)
+			go setFirst(buffer[b2], diff.Mul(-1), ch2)
+			go setFirst(buffer[b1], diff, ch1)
+
+			res := <-ch1
+			close(ch1)
+			if res.value != nil {
+				buffer[b1][res.index] = res.value
+			}
+			res = <-ch2
+			close(ch2)
+			if res.value != nil {
+				buffer[b2][res.index] = res.value
+			}
+		}
+	}
+
+	for b, incs := range buffer {
+		for _, inc := range incs {
+			b.SetInertia(b.GetInertia().Add(inc))
+		}
+	}
+
+	return buffer
 }
