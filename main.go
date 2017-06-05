@@ -8,8 +8,8 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-const spaceScale = 1e-20
-const timeScale = 1
+const spaceScale = 1e-10
+const timeScale = 1e+9
 
 func main() {
 	window := initializeSDL(800, 800)
@@ -21,7 +21,6 @@ func main() {
 		panic(err)
 	}
 
-	// TODO: fix quantities
 	system := initializeSystem()
 
 	for {
@@ -36,15 +35,17 @@ func main() {
 func plotSystem(surface *sdl.Surface, system gravity.System) {
 	rect := sdl.Rect{X: 0, Y: 0, W: 800, H: 800}
 	surface.FillRect(&rect, 0x00002255)
+	center := system.GetBody("Sun").GetPosition()
 	for _, body := range system.GetBodies() {
-		plotBody(surface, body)
+		plotBody(surface, body, center)
 	}
 }
 
-func plotBody(surface *sdl.Surface, body gravity.Body) {
+func plotBody(surface *sdl.Surface, body gravity.Body, center gravity.Point) {
+	pos := body.GetPosition().Add(center.Mul(-1))
 	brect := sdl.Rect{
-		X: int32(body.GetPosition().GetX()*spaceScale) + 400,
-		Y: int32(body.GetPosition().GetY()*spaceScale) + 400,
+		X: int32(pos.GetX()*spaceScale) + 400,
+		Y: int32(pos.GetY()*spaceScale) + 400,
 		W: 2,
 		H: 2,
 	}
@@ -73,12 +74,13 @@ func initializeSystem() gravity.System {
 
 	for i := 1; i < 11; i++ {
 		mass := 1.3e+22 + rand.Float64()*2e+27
-		x := 46e+6 + rand.Float64()*4.5e+9
-		y := 46e+6 + rand.Float64()*4.5e+9
+		x := rand.Float64()*4.5e+9 - 2.25e+9
+		y := rand.Float64()*4.5e+9 - 2.25e+9
 		body, _ = gravity.NewBody(fmt.Sprintf("Planet %v", i), mass, x, y, 0)
+		// TODO: fix inertia
 		inertia := gravity.NewPoint(
-			46e+6+rand.Float64()*4.5e+9,
-			46e+6+rand.Float64()*4.5e+9,
+			rand.Float64()*2.25e+9-x,
+			rand.Float64()*2.25e+9-y,
 			0,
 		)
 		body.SetInertia(inertia)
