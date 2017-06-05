@@ -8,6 +8,9 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+const spaceScale = 1e-20
+const timeScale = 1
+
 func main() {
 	window := initializeSDL(800, 800)
 	defer window.Destroy()
@@ -26,7 +29,7 @@ func main() {
 		delay := rand.Float64()*90 + 10
 		window.UpdateSurface()
 		sdl.Delay(uint32(delay))
-		system.Step(delay / 1000)
+		system.Step(delay * timeScale / 1000)
 	}
 }
 
@@ -40,8 +43,8 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 
 func plotBody(surface *sdl.Surface, body gravity.Body) {
 	brect := sdl.Rect{
-		X: int32(body.GetPosition().GetX()*1e-20) + 400,
-		Y: int32(body.GetPosition().GetY()*1e-20) + 400,
+		X: int32(body.GetPosition().GetX()*spaceScale) + 400,
+		Y: int32(body.GetPosition().GetY()*spaceScale) + 400,
 		W: 2,
 		H: 2,
 	}
