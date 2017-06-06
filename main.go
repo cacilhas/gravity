@@ -17,7 +17,7 @@ const timeScale = 1e+12
 const wsize = 600
 const wdiag = wsize / 2
 
-var spaceScale float64
+var spaceScale, tick float64
 var sphere *sdl.Surface
 
 func main() {
@@ -45,9 +45,12 @@ func main() {
 }
 
 func waitRandom(system gravity.System) {
-	delay := rand.Float64()*90 + 10
-	sdl.Delay(uint32(delay))
-	system.Step(delay * timeScale / 1000)
+	sdl.Delay(uint32(rand.Float32()*90 + 10))
+	now := float64(time.Now().UnixNano()) * 10e-6
+	if tick != 0 {
+		system.Step(now - tick)
+	}
+	tick = now
 }
 
 func plotSystem(surface *sdl.Surface, system gravity.System) {
