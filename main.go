@@ -58,15 +58,34 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 	}
 	fmt.Printf("futher: %v\r", futher)
 	spaceScale = wdiag / futher
+	bodies := system.GetBodies()
+	rects := make([]*sdl.Rect, len(bodies))
+	i := 0
+	for _, body := range bodies {
+		rect, j := calculatePosition(body, center, i)
+		rects[j] = rect
+		i++
+	}
 
-	for _, body := range system.GetBodies() {
-		plotBody(surface, body, center)
+	for _, rect := range rects {
+		plotBody(surface, rect)
 	}
 }
 
-func plotBody(surface *sdl.Surface, body gravity.Body, center gravity.Point) {
-	pos := body.GetPosition().Add(center.Mul(-1))
+func plotBody(surface *sdl.Surface, rect *sdl.Rect) {
 	src := sdl.Rect{X: 0, Y: 0, W: 10, H: 10}
+
+	if rect.W == 0 {
+		rect.W = 1
+		rect.H = 1
+		surface.FillRect(rect, 0x00ffffff)
+	} else {
+		sphere.BlitScaled(&src, surface, rect)
+	}
+}
+
+func calculatePosition(body gravity.Body, center gravity.Point, index int) (*sdl.Rect, int) {
+	pos := body.GetPosition().Add(center.Mul(-1))
 	radius := int32(body.GetMass() / 2e+29)
 
 	brect := sdl.Rect{
@@ -75,14 +94,7 @@ func plotBody(surface *sdl.Surface, body gravity.Body, center gravity.Point) {
 		W: radius,
 		H: radius,
 	}
-
-	if radius == 0 {
-		brect.W = 1
-		brect.H = 1
-		surface.FillRect(&brect, 0x00ffffff)
-	} else {
-		sphere.BlitScaled(&src, surface, &brect)
-	}
+	return &brect, index
 }
 
 func initializeSDL(width, height int) *sdl.Window {
