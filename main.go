@@ -5,10 +5,8 @@ import (
 	"math"
 	"math/rand"
 	"path/filepath"
-
-	"time"
-
 	"sync"
+	"time"
 
 	"bitbucket.org/cacilhas/gravity/system"
 	"github.com/veandco/go-sdl2/sdl"
@@ -61,38 +59,30 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 	spaceScale = wdiag / futher
 	bodies := system.GetBodies()
 
-	res := make([]chan *sdl.Rect, len(bodies))
-
-	i := 0
-	for _, body := range bodies {
-		res[i] = make(chan *sdl.Rect)
-		go calculatePosition(body, center, res[i])
-		i++
-	}
-
 	var lock sync.WaitGroup
-	lock.Add(len(res))
-	for _, resChan := range res {
-		rect := <-resChan
-		go plotBody(surface, rect, &lock)
+	lock.Add(len(bodies))
+	for _, body := range bodies {
+		go plotBody(surface, body, center, &lock)
 	}
 	lock.Wait()
 }
 
-func plotBody(surface *sdl.Surface, rect *sdl.Rect, lock *sync.WaitGroup) {
+func plotBody(surface *sdl.Surface, body gravity.Body, center gravity.Point, lock *sync.WaitGroup) {
 	defer lock.Done()
+	rect := calculatePosition(body, center)
 	src := sdl.Rect{X: 0, Y: 0, W: 10, H: 10}
 
-	if rect.W == 0 {
+	if rect.W == 0 { // just a dot
 		rect.W = 1
 		rect.H = 1
 		surface.FillRect(rect, 0x00ffffff)
-	} else {
+
+	} else { // big enough
 		sphere.BlitScaled(&src, surface, rect)
 	}
 }
 
-func calculatePosition(body gravity.Body, center gravity.Point, res chan *sdl.Rect) {
+func calculatePosition(body gravity.Body, center gravity.Point) *sdl.Rect {
 	pos := body.GetPosition().Add(center.Mul(-1))
 	radius := int32(body.GetMass() / 2e+29)
 
@@ -102,7 +92,7 @@ func calculatePosition(body gravity.Body, center gravity.Point, res chan *sdl.Re
 		W: radius,
 		H: radius,
 	}
-	res <- &rect
+	return &rect
 }
 
 func initializeSDL(width, height int) *sdl.Window {
