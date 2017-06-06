@@ -77,7 +77,11 @@ func plotBody(surface *sdl.Surface, body gravity.Body, center gravity.Point, loc
 		surface.FillRect(rect, 0x00ffffff)
 
 	} else { // big enough
-		sphere.BlitScaled(&sdl.Rect{X: 0, Y: 0, W: 10, H: 10}, surface, rect)
+		sphere.BlitScaled(
+			&sdl.Rect{X: 0, Y: 0, W: sphere.W, H: sphere.H},
+			surface,
+			rect,
+		)
 	}
 }
 
