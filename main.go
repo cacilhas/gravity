@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"path/filepath"
 
 	"time"
+
+	"sync"
 
 	"bitbucket.org/cacilhas/gravity/system"
 	"github.com/veandco/go-sdl2/sdl"
@@ -49,40 +52,57 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 	var futher float64
 	for _, body := range system.GetBodies() {
 		pos := body.GetPosition()
-		if x := pos.GetX(); x > futher {
-			futher = x
-		}
-		if y := pos.GetY(); y > futher {
-			futher = y
-		}
+		futher = math.Max(
+			futher,
+			math.Max(math.Abs(pos.GetX()), math.Abs(pos.GetY())),
+		)
 	}
 	fmt.Printf("futher: %v\r", futher)
 	spaceScale = wdiag / futher
+	bodies := system.GetBodies()
 
-	for _, body := range system.GetBodies() {
-		plotBody(surface, body, center)
+	res := make([]chan *sdl.Rect, len(bodies))
+
+	i := 0
+	for _, body := range bodies {
+		res[i] = make(chan *sdl.Rect)
+		go calculatePosition(body, center, res[i])
+		i++
+	}
+
+	var lock sync.WaitGroup
+	lock.Add(len(res))
+	for _, resChan := range res {
+		rect := <-resChan
+		go plotBody(surface, rect, &lock)
+	}
+	lock.Wait()
+}
+
+func plotBody(surface *sdl.Surface, rect *sdl.Rect, lock *sync.WaitGroup) {
+	defer lock.Done()
+	src := sdl.Rect{X: 0, Y: 0, W: 10, H: 10}
+
+	if rect.W == 0 {
+		rect.W = 1
+		rect.H = 1
+		surface.FillRect(rect, 0x00ffffff)
+	} else {
+		sphere.BlitScaled(&src, surface, rect)
 	}
 }
 
-func plotBody(surface *sdl.Surface, body gravity.Body, center gravity.Point) {
+func calculatePosition(body gravity.Body, center gravity.Point, res chan *sdl.Rect) {
 	pos := body.GetPosition().Add(center.Mul(-1))
-	src := sdl.Rect{X: 0, Y: 0, W: 10, H: 10}
 	radius := int32(body.GetMass() / 2e+29)
 
-	brect := sdl.Rect{
+	rect := sdl.Rect{
 		X: int32(pos.GetX()*spaceScale) + wdiag,
 		Y: int32(pos.GetY()*spaceScale) + wdiag,
 		W: radius,
 		H: radius,
 	}
-
-	if radius == 0 {
-		brect.W = 1
-		brect.H = 1
-		surface.FillRect(&brect, 0x00ffffff)
-	} else {
-		sphere.BlitScaled(&src, surface, &brect)
-	}
+	res <- &rect
 }
 
 func initializeSDL(width, height int) *sdl.Window {
