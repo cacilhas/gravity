@@ -51,8 +51,10 @@ func waitRandom(system gravity.System) {
 }
 
 func plotSystem(surface *sdl.Surface, system gravity.System) {
-	rect := sdl.Rect{X: 0, Y: 0, W: 800, H: 800}
-	surface.FillRect(&rect, 0x00002255)
+	surface.FillRect( // background
+		&sdl.Rect{X: 0, Y: 0, W: wsize, H: wsize},
+		0x00002255,
+	)
 	center := system.GetBody("Sun").GetPosition()
 
 	var futher float64
