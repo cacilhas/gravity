@@ -56,9 +56,10 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 		0x00002255,
 	)
 	center := system.GetBody("Sun").GetPosition()
+	bodies := system.GetBodies()
 
 	var futher float64
-	for _, body := range system.GetBodies() {
+	for _, body := range bodies {
 		pos := body.GetPosition()
 		futher = math.Max(
 			futher,
@@ -66,7 +67,6 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 		)
 	}
 	spaceScale = wdiag / futher
-	bodies := system.GetBodies()
 
 	var lock sync.WaitGroup
 	lock.Add(len(bodies))
