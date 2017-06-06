@@ -35,11 +35,15 @@ func main() {
 
 	for {
 		plotSystem(surface, system)
-		delay := rand.Float64()*90 + 10
 		window.UpdateSurface()
-		sdl.Delay(uint32(delay))
-		system.Step(delay * timeScale / 1000)
+		waitRandom(system)
 	}
+}
+
+func waitRandom(system gravity.System) {
+	delay := rand.Float64()*90 + 10
+	sdl.Delay(uint32(delay))
+	system.Step(delay * timeScale / 1000)
 }
 
 func plotSystem(surface *sdl.Surface, system gravity.System) {
