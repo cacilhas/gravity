@@ -54,6 +54,69 @@ func TestPoint_Hypot(t *testing.T) {
 	}
 }
 
+func TestPoint_TanXY(t *testing.T) {
+	point := gravity.NewPoint(1, 2, 3).TanXY()
+	tests := []struct {
+		name          string
+		expected, got float64
+	}{
+		{"x", -2, point.GetX()},
+		{"y", -1, point.GetY()},
+		{"z", 3, point.GetZ()},
+	}
+
+	for _, test := range tests {
+		if test.got != test.expected {
+			t.Fatalf(
+				"[Point.TanXY %v] expected %v, got %v",
+				test.name, test.expected, test.got,
+			)
+		}
+	}
+}
+
+func TestPoint_TanXZ(t *testing.T) {
+	point := gravity.NewPoint(1, 2, 3).TanXZ()
+	tests := []struct {
+		name          string
+		expected, got float64
+	}{
+		{"x", -3, point.GetX()},
+		{"y", 2, point.GetY()},
+		{"z", -1, point.GetZ()},
+	}
+
+	for _, test := range tests {
+		if test.got != test.expected {
+			t.Fatalf(
+				"[Point.TanXY %v] expected %v, got %v",
+				test.name, test.expected, test.got,
+			)
+		}
+	}
+}
+
+func TestPoint_TanYZ(t *testing.T) {
+	point := gravity.NewPoint(1, 2, 3).TanYZ()
+	tests := []struct {
+		name          string
+		expected, got float64
+	}{
+		{"x", 1, point.GetX()},
+		{"y", -3, point.GetY()},
+		{"z", -2, point.GetZ()},
+	}
+
+	for _, test := range tests {
+		if test.got != test.expected {
+			t.Fatalf(
+				"[Point.TanXY %v] expected %v, got %v",
+				test.name, test.expected, test.got,
+			)
+		}
+	}
+}
+
 func TestPoint_Add(t *testing.T) {
 	point1 := gravity.NewPoint(1, 2, 3)
 	point2 := gravity.NewPoint(4, 5, 6)

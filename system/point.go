@@ -11,6 +11,9 @@ type Point interface {
 	GetY() float64
 	GetZ() float64
 	Hypot() float64
+	TanXY() Point
+	TanXZ() Point
+	TanYZ() Point
 
 	Add(Point) Point
 	Add2(x, y float64) Point
@@ -44,6 +47,30 @@ func (p point) GetZ() float64 {
 
 func (p point) Hypot() float64 {
 	return math.Hypot(math.Hypot(p.x, p.y), p.z)
+}
+
+func (p point) TanXY() Point {
+	return point{
+		x: -p.y,
+		y: -p.x,
+		z: p.z,
+	}
+}
+
+func (p point) TanXZ() Point {
+	return point{
+		x: -p.z,
+		y: p.y,
+		z: -p.x,
+	}
+}
+
+func (p point) TanYZ() Point {
+	return point{
+		x: p.x,
+		y: -p.z,
+		z: -p.y,
+	}
 }
 
 func (p point) Add(other Point) Point {
