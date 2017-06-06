@@ -45,7 +45,7 @@ func main() {
 }
 
 func waitRandom(system gravity.System) {
-	sdl.Delay(uint32(rand.Float32()*90 + 10))
+	sdl.Delay(uint32(rand.Intn(90) + 10))
 	now := float64(time.Now().UnixNano()) * 10e-6
 	if tick != 0 {
 		system.Step(now - tick)
