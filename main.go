@@ -70,7 +70,6 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 func plotBody(surface *sdl.Surface, body gravity.Body, center gravity.Point, lock *sync.WaitGroup) {
 	defer lock.Done()
 	rect := calculatePosition(body, center)
-	src := sdl.Rect{X: 0, Y: 0, W: 10, H: 10}
 
 	if rect.W == 0 { // just a dot
 		rect.W = 1
@@ -78,7 +77,7 @@ func plotBody(surface *sdl.Surface, body gravity.Body, center gravity.Point, loc
 		surface.FillRect(rect, 0x00ffffff)
 
 	} else { // big enough
-		sphere.BlitScaled(&src, surface, rect)
+		sphere.BlitScaled(&sdl.Rect{X: 0, Y: 0, W: 10, H: 10}, surface, rect)
 	}
 }
 
