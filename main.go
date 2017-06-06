@@ -36,6 +36,10 @@ func main() {
 	for {
 		plotSystem(surface, system)
 		window.UpdateSurface()
+		// TODO: make it work
+		if state := sdl.GetKeyboardState(); state[sdl.SCANCODE_ESCAPE] != 0 {
+			sdl.Quit()
+		}
 		waitRandom(system)
 	}
 }
@@ -59,7 +63,6 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 			math.Max(math.Abs(pos.GetX()), math.Abs(pos.GetY())),
 		)
 	}
-	fmt.Printf("futher: %v\r", futher)
 	spaceScale = wdiag / futher
 	bodies := system.GetBodies()
 
