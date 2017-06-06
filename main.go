@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"path/filepath"
 
 	"time"
+
+	"sync"
 
 	"bitbucket.org/cacilhas/gravity/system"
 	"github.com/veandco/go-sdl2/sdl"
@@ -49,30 +52,35 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 	var futher float64
 	for _, body := range system.GetBodies() {
 		pos := body.GetPosition()
-		if x := pos.GetX(); x > futher {
-			futher = x
-		}
-		if y := pos.GetY(); y > futher {
-			futher = y
-		}
+		futher = math.Max(
+			futher,
+			math.Max(math.Abs(pos.GetX()), math.Abs(pos.GetY())),
+		)
 	}
 	fmt.Printf("futher: %v\r", futher)
 	spaceScale = wdiag / futher
 	bodies := system.GetBodies()
-	rects := make([]*sdl.Rect, len(bodies))
+
+	res := make([]chan *sdl.Rect, len(bodies))
+
 	i := 0
 	for _, body := range bodies {
-		rect, j := calculatePosition(body, center, i)
-		rects[j] = rect
+		res[i] = make(chan *sdl.Rect)
+		go calculatePosition(body, center, res[i])
 		i++
 	}
 
-	for _, rect := range rects {
-		plotBody(surface, rect)
+	var lock sync.WaitGroup
+	lock.Add(len(res))
+	for _, resChan := range res {
+		rect := <-resChan
+		go plotBody(surface, rect, &lock)
 	}
+	lock.Wait()
 }
 
-func plotBody(surface *sdl.Surface, rect *sdl.Rect) {
+func plotBody(surface *sdl.Surface, rect *sdl.Rect, lock *sync.WaitGroup) {
+	defer lock.Done()
 	src := sdl.Rect{X: 0, Y: 0, W: 10, H: 10}
 
 	if rect.W == 0 {
@@ -84,17 +92,17 @@ func plotBody(surface *sdl.Surface, rect *sdl.Rect) {
 	}
 }
 
-func calculatePosition(body gravity.Body, center gravity.Point, index int) (*sdl.Rect, int) {
+func calculatePosition(body gravity.Body, center gravity.Point, res chan *sdl.Rect) {
 	pos := body.GetPosition().Add(center.Mul(-1))
 	radius := int32(body.GetMass() / 2e+29)
 
-	brect := sdl.Rect{
+	rect := sdl.Rect{
 		X: int32(pos.GetX()*spaceScale) + wdiag,
 		Y: int32(pos.GetY()*spaceScale) + wdiag,
 		W: radius,
 		H: radius,
 	}
-	return &brect, index
+	res <- &rect
 }
 
 func initializeSDL(width, height int) *sdl.Window {
