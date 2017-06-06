@@ -15,7 +15,7 @@ import (
 
 const timeScale = 1e+12
 const wsize = 600
-const wdiag = wsize / 2
+const wradius = wsize / 2
 
 var spaceScale, tick float64
 var sphere *sdl.Surface
@@ -69,7 +69,7 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 			math.Max(math.Abs(pos.GetX()), math.Abs(pos.GetY())),
 		)
 	}
-	spaceScale = wdiag / futher
+	spaceScale = wradius / futher
 
 	var lock sync.WaitGroup
 	lock.Add(len(bodies))
@@ -102,8 +102,8 @@ func calculatePosition(body gravity.Body, center gravity.Point) *sdl.Rect {
 	radius := int32(body.GetMass() / 2e+29)
 
 	rect := sdl.Rect{
-		X: int32(pos.GetX()*spaceScale) + wdiag,
-		Y: int32(pos.GetY()*spaceScale) + wdiag,
+		X: int32(pos.GetX()*spaceScale) + wradius,
+		Y: int32(pos.GetY()*spaceScale) + wradius,
 		W: radius,
 		H: radius,
 	}
