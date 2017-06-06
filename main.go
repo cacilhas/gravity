@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"path/filepath"
 
 	"time"
 
 	"bitbucket.org/cacilhas/gravity/system"
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/veandco/go-sdl2/sdl_image"
 )
 
 const timeScale = 1e+12
@@ -15,6 +17,7 @@ const wsize = 600
 const wdiag = wsize / 2
 
 var spaceScale float64
+var sphere *sdl.Surface
 
 func main() {
 	window := initializeSDL(wsize, wsize)
@@ -53,6 +56,7 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 			futher = y
 		}
 	}
+	fmt.Printf("futher: %v\r", futher)
 	spaceScale = wdiag / futher
 
 	for _, body := range system.GetBodies() {
@@ -62,23 +66,39 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 
 func plotBody(surface *sdl.Surface, body gravity.Body, center gravity.Point) {
 	pos := body.GetPosition().Add(center.Mul(-1))
+	src := sdl.Rect{X: 0, Y: 0, W: 10, H: 10}
+	radius := int32(body.GetMass() / 2e+29)
+
 	brect := sdl.Rect{
 		X: int32(pos.GetX()*spaceScale) + wdiag,
 		Y: int32(pos.GetY()*spaceScale) + wdiag,
-		W: 2,
-		H: 2,
+		W: radius,
+		H: radius,
 	}
-	surface.FillRect(&brect, 0x00ffffff)
+
+	if radius == 0 {
+		brect.W = 1
+		brect.H = 1
+		surface.FillRect(&brect, 0x00ffffff)
+	} else {
+		sphere.BlitScaled(&src, surface, &brect)
+	}
 }
 
 func initializeSDL(width, height int) *sdl.Window {
 	sdl.Init(sdl.INIT_EVERYTHING)
+	img.Init(img.INIT_PNG)
 	window, err := sdl.CreateWindow(
 		"Gravity",
 		sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED,
 		width, height,
 		sdl.WINDOW_SHOWN,
 	)
+	if err != nil {
+		panic(err)
+	}
+	filename, _ := filepath.Abs("./sphere.png")
+	sphere, err = img.Load(filename)
 	if err != nil {
 		panic(err)
 	}
