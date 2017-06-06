@@ -38,7 +38,7 @@ func main() {
 		window.UpdateSurface()
 		// TODO: make it work
 		if state := sdl.GetKeyboardState(); state[sdl.SCANCODE_ESCAPE] != 0 {
-			sdl.Quit()
+			break
 		}
 		waitRandom(system)
 	}
