@@ -61,13 +61,13 @@ func TestPoint(t *testing.T) {
 			name          string
 			expected, got float64
 		}{
-			{"x", -2, point.GetX()},
-			{"y", -1, point.GetY()},
+			{"x", -3.6, point.GetX()},
+			{"y", 1, point.GetY()},
 			{"z", 3, point.GetZ()},
 		}
 
 		for _, test := range tests {
-			if test.got != test.expected {
+			if math.Abs(test.got-test.expected) > 0.5 {
 				t.Fatalf(
 					"[Point.TanXY %v] expected %v, got %v",
 					test.name, test.expected, test.got,
@@ -82,13 +82,13 @@ func TestPoint(t *testing.T) {
 			name          string
 			expected, got float64
 		}{
-			{"x", -3, point.GetX()},
+			{"x", -3.6, point.GetX()},
 			{"y", 2, point.GetY()},
-			{"z", -1, point.GetZ()},
+			{"z", 1, point.GetZ()},
 		}
 
 		for _, test := range tests {
-			if test.got != test.expected {
+			if math.Abs(test.got-test.expected) > 0.5 {
 				t.Fatalf(
 					"[Point.TanXY %v] expected %v, got %v",
 					test.name, test.expected, test.got,
@@ -105,11 +105,11 @@ func TestPoint(t *testing.T) {
 		}{
 			{"x", 1, point.GetX()},
 			{"y", -3, point.GetY()},
-			{"z", -2, point.GetZ()},
+			{"z", 2, point.GetZ()},
 		}
 
 		for _, test := range tests {
-			if test.got != test.expected {
+			if math.Abs(test.got-test.expected) > 0.5 {
 				t.Fatalf(
 					"[Point.TanXY %v] expected %v, got %v",
 					test.name, test.expected, test.got,

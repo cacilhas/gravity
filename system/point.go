@@ -50,26 +50,38 @@ func (p point) Hypot() float64 {
 }
 
 func (p point) TanXY() Point {
+	a := p.Hypot()
+	ang := math.Acos(p.x/a) + (math.Pi / 2)
+	x := a * math.Cos(ang)
+	y := a * math.Sin(ang)
 	return point{
-		x: -p.y,
-		y: -p.x,
+		x: x,
+		y: y,
 		z: p.z,
 	}
 }
 
 func (p point) TanXZ() Point {
+	a := p.Hypot()
+	ang := math.Acos(p.x/a) + (math.Pi / 2)
+	x := a * math.Cos(ang)
+	z := a * math.Sin(ang)
 	return point{
-		x: -p.z,
+		x: x,
 		y: p.y,
-		z: -p.x,
+		z: z,
 	}
 }
 
 func (p point) TanYZ() Point {
+	a := p.Hypot()
+	ang := math.Acos(p.y/a) + (math.Pi / 2)
+	y := a * math.Cos(ang)
+	z := a * math.Sin(ang)
 	return point{
 		x: p.x,
-		y: -p.z,
-		z: -p.y,
+		y: y,
+		z: z,
 	}
 }
 
