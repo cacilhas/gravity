@@ -147,6 +147,8 @@ func initializeSystem() gravity.System {
 		x := rand.Float64()*4.5e+9 - 2.25e+9
 		y := rand.Float64()*4.5e+9 - 2.25e+9
 		body, _ = gravity.NewBody(fmt.Sprintf("Planet %v", i), mass, x, y, 0)
+		inertia := body.GetPosition().TanXY().Mul(5e+21)
+		body.SetInertia(inertia)
 		system.AddBody(body)
 	}
 
