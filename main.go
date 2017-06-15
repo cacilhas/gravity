@@ -40,12 +40,17 @@ func main() {
 		if state := sdl.GetKeyboardState(); state[sdl.SCANCODE_ESCAPE] != 0 {
 			break
 		}
-		waitRandom(system)
+		count := len(system.GetBodies())
+		fmt.Printf(
+			"bodies: %2d\tscale: %f         \r",
+			count, -math.Log10(spaceScale),
+		)
+		wait(system)
 	}
 }
 
-func waitRandom(system gravity.System) {
-	sdl.Delay(uint32(rand.Intn(90) + 10))
+func wait(system gravity.System) {
+	sdl.Delay(100)
 	now := float64(time.Now().UnixNano()) * 10e-6
 	if tick != 0 {
 		system.Step(now - tick)
@@ -69,7 +74,8 @@ func plotSystem(surface *sdl.Surface, system gravity.System) {
 			math.Max(math.Abs(pos.GetX()), math.Abs(pos.GetY())),
 		)
 	}
-	spaceScale = wradius / futher
+	spaceScale = math.Max(wradius/futher, 1e-8)
+	bodies = system.GetBodies()
 
 	var lock sync.WaitGroup
 	lock.Add(len(bodies))
@@ -134,15 +140,12 @@ func initializeSDL(width, height int) *sdl.Window {
 func initializeSystem() gravity.System {
 	body, _ := gravity.NewBody("Sun", 2e+30, 0, 0, 0)
 	system, _ := gravity.NewSystem(body)
-	centerMass := body.GetMass()
 
 	for i := 1; i <= 10; i++ {
 		mass := 1.3e+22 + rand.Float64()*2e+27
 		x := rand.Float64()*4.5e+9 - 2.25e+9
 		y := rand.Float64()*4.5e+9 - 2.25e+9
 		body, _ = gravity.NewBody(fmt.Sprintf("Planet %v", i), mass, x, y, 0)
-		inertia := body.GetPosition().Mul(body.GetMass() * centerMass).TanXY()
-		body.SetInertia(inertia)
 		system.AddBody(body)
 	}
 
