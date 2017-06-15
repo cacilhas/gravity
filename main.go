@@ -128,6 +128,7 @@ func initializeSDL(width, height int) *sdl.Window {
 	if err != nil {
 		panic(err)
 	}
+	// TODO: this stinks
 	filename, _ := filepath.Abs("./sphere.png")
 	sphere, err = img.Load(filename)
 	if err != nil {
