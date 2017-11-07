@@ -15,7 +15,6 @@ func TestGravityBody(t *testing.T) {
 		}
 
 		if err == nil {
-
 			t.Fatal("[NewBody] error not raised")
 		}
 	})
@@ -28,7 +27,6 @@ func TestGravityBody(t *testing.T) {
 		}
 
 		if err == nil {
-
 			t.Fatal("[NewBody] error not raised")
 		}
 	})
