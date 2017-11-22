@@ -31,7 +31,7 @@ func TestPoint(t *testing.T) {
 		}
 	})
 
-	t.Run("#Hypot", func(t *testing.T) {
+	t.Run("#Magnitude", func(t *testing.T) {
 		point1 := gravity.NewPoint(3, 4, 0)
 		point2 := gravity.NewPoint(0, 0, 0)
 		point3 := gravity.NewPoint(1, 1, 1)
@@ -40,15 +40,15 @@ func TestPoint(t *testing.T) {
 			name          string
 			expected, got float64
 		}{
-			{"(3, 4)", 5, point1.Hypot()},
-			{"(0, 0)", 0, point2.Hypot()},
-			{"(1, 1, 1)", math.Sqrt(3), point3.Hypot()},
+			{"(3, 4)", 5, point1.Magnitude()},
+			{"(0, 0)", 0, point2.Magnitude()},
+			{"(1, 1, 1)", math.Sqrt(3), point3.Magnitude()},
 		}
 
 		for _, test := range tests {
 			if test.got != test.expected {
 				t.Fatalf(
-					"[Point.Hypot %v] expected %v, got %v",
+					"[Point.Magnitude %v] expected %v, got %v",
 					test.name, test.expected, test.got,
 				)
 			}
