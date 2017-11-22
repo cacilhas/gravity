@@ -87,7 +87,7 @@ func (b *body) Move(dt float64) error {
 
 func (b body) Grav(other Body) Point {
 	diff := b.position.Diff(other.GetPosition())
-	d := diff.Hypot()
+	d := diff.Magnitude()
 	f := G * b.mass * other.GetMass() / (d * d)
 
 	dx := diff.GetX()
