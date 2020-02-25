@@ -5,7 +5,7 @@ import (
 
 	"math"
 
-	gravity "bitbucket.org/cacilhas/gravity/system"
+	gravity "github.com/cacilhas/gravity/system"
 )
 
 func TestPoint(t *testing.T) {

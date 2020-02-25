@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	gravity "bitbucket.org/cacilhas/gravity/system"
+	gravity "github.com/cacilhas/gravity/system"
 )
 
 func TestGravityBody(t *testing.T) {

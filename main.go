@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"bitbucket.org/cacilhas/gravity/system"
+	"github.com/cacilhas/gravity/system"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/sdl_image"
 )
